@@ -57,6 +57,7 @@ def fillTree():
         count += 1
 
 
+
 root = tk.Tk()
 root.title('Test Treeview')
 #root.iconbitmap('')
@@ -101,7 +102,6 @@ my_treeview.heading('geslacht', text='Geslacht', anchor='w')
 
 
 # Data invoegen bij opstarten programma
-fillTree()
 # my_treeview.insert(parent='', index='end', iid=0, text='Parent1', values=(1, 'John', 'Smith', 'Man'))
 # my_treeview.insert(parent='', index='end', iid=1, text='Pietjpuk', values=(2, 'Betsie', 'Jansen', 'Vrouw'))
 # my_treeview.insert(parent='1', index='end', iid=2, text='Paulus', values=(1.2, 'Jantine', 'Vulpen', 'Vrouw'))
@@ -142,6 +142,34 @@ def clearEdits():
 
 btnClear = tk.Button(data_frame, text='Clear edits', command=clearEdits)
 btnClear.grid(row=2, column=0, padx=10, pady=10)
+
+
+# Record selecteren
+def selecteerRec(e):
+    selectRec()
+
+
+def selectRec():
+    clearEdits()
+
+    # Record nummer ophalen
+    selected = my_treeview.focus()
+    # Record waarden ophalen
+    values = my_treeview.item(selected, 'values')
+
+    # Editboxen vullen met values
+    edtID.insert(0, values[0])
+    edtGeslacht.insert(0, values[3])
+    edtLastNm.insert(0, values[2])
+    edtFirstNm.insert(0, values[1])
+
+
+fillTree()
+my_treeview.focus(0)
+my_treeview.selection_set(0)
+selectRec()
+
+
 
 # Add button toevoegen
 def toevoegenRec():
@@ -186,25 +214,6 @@ def wisAlleGeselecteerde():
     for rec in recs:
         my_treeview.delete(rec)
 
-
-# Record selecteren
-def selecteerRec(e):
-    selectRec()
-
-
-def selectRec():
-    clearEdits()
-
-    # Record nummer ophalen
-    selected = my_treeview.focus()
-    # Record waarden ophalen
-    values = my_treeview.item(selected, 'values')
-
-    # Editboxen vullen met values
-    edtID.insert(0, values[0])
-    edtGeslacht.insert(0, values[3])
-    edtLastNm.insert(0, values[2])
-    edtFirstNm.insert(0, values[1])
 
 def refreshData():
     clearEdits()
