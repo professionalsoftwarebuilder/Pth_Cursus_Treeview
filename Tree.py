@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 
+DATABASE = 'dbCrm.db'
+TBL_PERSONEN = 'Personen'
 
 
 def fetch_data(sqlcommand):
@@ -27,6 +29,7 @@ def fetch_data(sqlcommand):
     # Retourneer de resultset (records)
     return records
 
+
 def exec_comnd(sqlcommand, dict):
     # Connecten met een database
     # (wordt aangemaakt indien deze niet bestaat)
@@ -47,7 +50,6 @@ def exec_comnd(sqlcommand, dict):
 
 def fillTree():
     data = fetch_data('Select rowid, * from Personen')
-    global count
     count = 0
     for record in data:
         my_treeview.insert(parent='',
@@ -56,11 +58,12 @@ def fillTree():
                            values=(record[0], record[1], record[2], record[3]))
         count += 1
 
+    return count
 
 
 root = tk.Tk()
 root.title('Test Treeview')
-#root.iconbitmap('')
+# root.iconbitmap('')
 root.geometry('800x800')
 
 # Add some style
@@ -86,20 +89,18 @@ my_treeview.tag_configure('evenrow', background='lightblue')
 my_treeview['columns'] = ('ID', 'voornaam', 'achternaam', 'geslacht')
 
 # Format colummen
-#my_treeview.column('#0', width=120, minwidth=25)
+# my_treeview.column('#0', width=120, minwidth=25)
 my_treeview.column('voornaam', anchor='w', width=120)
 my_treeview.column('ID', anchor='center', width=80)
 my_treeview.column('achternaam', width=120, anchor='w')
 my_treeview.column('geslacht', width=100, anchor='w')
 
 # Create headings
-#my_treeview.heading('#0', text='Label', anchor='w')
+# my_treeview.heading('#0', text='Label', anchor='w')
 my_treeview.heading('voornaam', text='Voornaam', anchor='w')
 my_treeview.heading('ID', text='Id', anchor='center')
 my_treeview.heading('achternaam', text='Achternaam', anchor='w')
 my_treeview.heading('geslacht', text='Geslacht', anchor='w')
-
-
 
 # Data invoegen bij opstarten programma
 # my_treeview.insert(parent='', index='end', iid=0, text='Parent1', values=(1, 'John', 'Smith', 'Man'))
@@ -133,6 +134,7 @@ lblGeslacht.grid(row=1, column=0, padx=10, pady=10)
 edtGeslacht = tk.Entry(data_frame)
 edtGeslacht.grid(row=1, column=1, padx=10, pady=10)
 
+
 def clearEdits():
     edtID.delete(0, tk.END)
     edtGeslacht.delete(0, tk.END)
@@ -158,22 +160,20 @@ def selectRec():
     values = my_treeview.item(selected, 'values')
 
     # Editboxen vullen met values
+    #if values[0] != 'null':
     edtID.insert(0, values[0])
     edtGeslacht.insert(0, values[3])
     edtLastNm.insert(0, values[2])
     edtFirstNm.insert(0, values[1])
 
 
-fillTree()
-my_treeview.focus(0)
-my_treeview.selection_set(0)
-selectRec()
 
 
 
 # Add button toevoegen
 def toevoegenRec():
-    my_treeview.insert(parent='', index='end', iid=len(my_treeview.get_children()) + 1, values=(edtID.get(), edtFirstNm.get(), edtLastNm.get(), edtGeslacht.get()))
+    my_treeview.insert(parent='', index='end', iid=len(my_treeview.get_children()) + 1,
+                       values=(edtID.get(), edtFirstNm.get(), edtLastNm.get(), edtGeslacht.get()))
 
     # Record ook aan database toevoegen
     sqlcmnd = '''insert into personen 
@@ -191,8 +191,10 @@ def toevoegenRec():
             'geslacht': edtGeslacht.get()}
     exec_comnd(sqlcmnd, dict)
 
+
 btnToevoeg = tk.Button(root, text='Toevoegen', command=toevoegenRec)
 btnToevoeg.pack(pady=10)
+
 
 # Een rec wissen
 def wisGeselecteerde():
@@ -207,6 +209,7 @@ def wisGeselecteerde():
 
 btnWisEen = tk.Button(root, text='Wis eerste geselecteerde', command=wisGeselecteerde)
 btnWisEen.pack(pady=10)
+
 
 # Meerdere geselcteerde recs wissen
 def wisAlleGeselecteerde():
@@ -235,7 +238,8 @@ def updateRec():
     # Record nummer ophalen
     selected = my_treeview.focus()
     # Record opslaan
-    values = my_treeview.item(selected, text='', values=(edtID.get(), edtFirstNm.get(), edtLastNm.get(), edtGeslacht.get()))
+    values = my_treeview.item(selected, text='',
+                              values=(edtID.get(), edtFirstNm.get(), edtLastNm.get(), edtGeslacht.get()))
 
     # Record in database wijzigen
     sqlcmnd = '''Update personen set
@@ -258,10 +262,39 @@ my_treeview.bind('<ButtonRelease-1>', selecteerRec)
 btnUpdateRec = tk.Button(root, text='Update rec.', command=updateRec)
 btnUpdateRec.pack(pady=10)
 
-
 btnWisEen = tk.Button(root, text='Wis alle geselecteerde', command=wisAlleGeselecteerde)
 btnWisEen.pack(pady=10)
 
+def startup():
+    # Check if table exists
+    records = fetch_data(
+        ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{0}' '''.format(TBL_PERSONEN))
+
+    print(records[0])
+
+    # if the count is 1, then table exists
+    if records[0][0] != 1:
+        # Create the table
+        exec_comnd(
+            '''
+                CREATE TABLE if not exists
+                Personen (
+                    VoorNm TEXT,
+                    AchterNm TEXT,
+                    Geslacht TEXT,
+                    IdCode TEXT
+                )
+            ''', {}
+        )
+
+    reccount = fillTree()
+    if reccount > 0:
+        my_treeview.focus(0)
+        my_treeview.selection_set(0)
+        selectRec()
+
+
+startup()
 
 root.mainloop()
 
@@ -274,3 +307,4 @@ root.mainloop()
 #             IdCode TEXT
 #         )
 #     '''
+
