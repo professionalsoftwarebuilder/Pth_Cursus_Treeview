@@ -5,4 +5,4 @@ Deze module is de uitgang voor Cursus OO programmeren.
 Als oefening wordt een DAL (Datat Access Layer) gemakket die de database functionaliteit overneemt die nu
 "los" in deze module "rondzwerft".  
   
-Het eindresultaat vd deze cursus is te vinden in Py_Cursus_2nogwat.
+Het eindresultaat vd deze cursus is te vinden in Py_Treeview_Cursus_2.
